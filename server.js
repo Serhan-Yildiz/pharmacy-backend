@@ -13,13 +13,27 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB bağlantısı başarılı"))
   .catch(err => console.log(err));
 
-app.post("/", async (req, res) => {
+app.post("/register", async (req, res) => {
   try {
     const patient = new Patient(req.body);
     await patient.save();
     res.status(201).json({ message: "Kayıt başarılı" });
   } catch (error) {
     res.status(500).json({ error: "Kayıt başarısız" });
+  }
+});
+app.post("/login", async (req, res) => {
+  try {
+    const { tc } = req.body;
+    const patient = await Patient.findOne({ tc });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    }
+
+    res.json({ patient });
+  } catch (error) {
+    res.status(500).json({ error: "Sunucu hatası" });
   }
 });
 
