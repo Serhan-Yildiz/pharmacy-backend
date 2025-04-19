@@ -26,8 +26,8 @@ app.post("/register", async (req, res) => {
 });
 app.post("/login", async (req, res) => {
   try {
-    const { tc } = req.body;
-    const patient = await Patient.findOne({ tc });
+    const { tc, name, surname } = req.body;
+    const patient = await Patient.findOne({ tc, name, surname });
 
     if (!patient) {
       return res.status(404).json({ error: "Kullanıcı bulunamadı" });
@@ -35,9 +35,11 @@ app.post("/login", async (req, res) => {
 
     res.json({ patient });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Sunucu hatası" });
   }
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Sunucu çalışıyor: ${PORT}`));
