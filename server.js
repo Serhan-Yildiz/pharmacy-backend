@@ -13,7 +13,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB bağlantısı başarılı"))
   .catch(err => console.log(err));
 
-app.post("/register", async (req, res) => {
+app.post("/", async (req, res) => {
   try {
     const patient = new Patient(req.body);
     await patient.save();
