@@ -6,7 +6,9 @@ require("dotenv").config();
 const Patient = require("./models/Patient");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://serhan-yildiz.github.io"
+}));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
@@ -15,7 +17,6 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.post("/register", async (req, res) => {
   try {
-    console.log("Gelen veri:", req.body); // ← EKLE
     const patient = new Patient(req.body);
     await patient.save();
     res.status(201).json({ message: "Kayıt başarılı" });
