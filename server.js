@@ -26,7 +26,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/", async (req, res) => {
   try {
     const { tc, name, surname } = req.body;
     const patient = await Patient.findOne({ tc, name, surname });
