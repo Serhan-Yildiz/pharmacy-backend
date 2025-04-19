@@ -17,6 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.post("/register", async (req, res) => {
   try {
+    console.log("Gelen veri:", req.body);
     const patient = new Patient(req.body);
     await patient.save();
     res.status(201).json({ message: "Kayıt başarılı" });
@@ -24,6 +25,7 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ error: "Kayıt başarısız" });
   }
 });
+
 app.post("/login", async (req, res) => {
   try {
     const { tc, name, surname } = req.body;
@@ -35,7 +37,6 @@ app.post("/login", async (req, res) => {
 
     res.json({ patient });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Sunucu hatası" });
   }
 });
