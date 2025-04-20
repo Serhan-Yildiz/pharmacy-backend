@@ -1,46 +1,60 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
 const cors = require("cors");
-require("dotenv").config();
-
-const Patient = require("./models/Patient");
 
 const app = express();
-app.use(cors({
-  origin: "https://serhan-yildiz.github.io"
-}));
+const PORT = process.env.PORT || 5000;
+const DATA_FILE = "./patients.json";
+
+app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB bağlantısı başarılı"))
-  .catch(err => console.log(err));
+// JSON dosyasını oku
+function readPatients() {
+    if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
+    const data = fs.readFileSync(DATA_FILE);
+    return JSON.parse(data);
+}
 
-app.post("/register", async (req, res) => {
-  try {
-    console.log("Gelen veri:", req.body);
-    const patient = new Patient(req.body);
-    await patient.save();
-    res.status(201).json({ message: "Kayıt başarılı" });
-  } catch (error) {
-    res.status(500).json({ error: "Kayıt başarısız" });
-  }
-});
+// JSON dosyasına yaz
+function writePatients(patients) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(patients, null, 2));
+}
 
-app.post("/login", async (req, res) => {
-  try {
-    const { tc, name, surname } = req.body;
-    const patient = await Patient.findOne({ tc, name, surname });
+// Kayıt endpointi
+app.post("/register", (req, res) => {
+    const newPatient = req.body;
+    const patients = readPatients();
 
-    if (!patient) {
-      return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    if (patients.find(p => p.tc === newPatient.tc)) {
+        return res.status(400).json({ error: "Bu TC ile zaten kayıtlı bir kullanıcı var" });
     }
 
-    res.json({ patient });
-  } catch (error) {
-    res.status(500).json({ error: "Sunucu hatası" });
-  }
+    patients.push(newPatient);
+    writePatients(patients);
+
+    res.status(201).json({ message: "Kayıt başarılı" });
 });
 
+// Giriş endpointi (TC, Ad, Soyad ile)
+app.post("/login", (req, res) => {
+    const { tc, name, surname } = req.body;
+    const patients = readPatients();
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Sunucu çalışıyor: ${PORT}`));
+    const user = patients.find(
+        p => p.tc === tc && p.name.toLowerCase() === name.toLowerCase() && p.surname.toLowerCase() === surname.toLowerCase()
+    );
+
+    if (!user) {
+        return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    }
+
+    res.json({ message: "Giriş başarılı", patient: user });
+});
+
+// Sunucu başlat
+app.listen(PORT, () => {
+    console.log(`Sunucu çalışıyor: http://localhost:${PORT}`);
+});
