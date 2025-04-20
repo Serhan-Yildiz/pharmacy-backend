@@ -13,54 +13,48 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-// JSON dosyasını oku
 function readPatients() {
-    // Dosya yoksa oluştur ve içine [] yaz
-    if (!fs.existsSync(DATA_FILE)) {
-        fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-        fs.writeFileSync(DATA_FILE, "[]");
-    }
-    const data = fs.readFileSync(DATA_FILE);
-    return JSON.parse(data);
+  try {
+      if (!fs.existsSync(DATA_FILE)) {
+          fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+          fs.writeFileSync(DATA_FILE, "[]");
+      }
+      const data = fs.readFileSync(DATA_FILE);
+      return JSON.parse(data);
+  } catch (error) {
+      console.error("Dosya okuma hatası:", error);
+      throw new Error("Hasta verileri okunamadı.");
+  }
 }
 
-// JSON dosyasına yaz
 function writePatients(patients) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(patients, null, 2));
+  try {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(patients, null, 2));
+  } catch (error) {
+      console.error("Dosya yazma hatası:", error);
+      throw new Error("Hasta verileri kaydedilemedi.");
+  }
 }
+const isValidTc = tc => /^\d{11}$/.test(tc);  // 11 haneli sayı kontrolü
 
-// Kayıt endpointi
 app.post("/register", (req, res) => {
     const newPatient = req.body;
-    const patients = readPatients();
 
-    // Zaten kayıtlı mı kontrol et
-    if (patients.find(p => p.tc === newPatient.tc)) {
-        return res.status(400).json({ error: "Bu TC ile zaten kayıtlı bir kullanıcı var" });
+    if (!isValidTc(newPatient.tc)) {
+        return res.status(400).json({ error: "Geçersiz TC numarası" });
     }
 
-    patients.push(newPatient);
-    writePatients(patients);
-
-    res.status(201).json({ message: "Kayıt başarılı" });
+    // Diğer kontrol ve işlem
 });
 
-// Giriş endpointi (TC, Ad, Soyad ile)
 app.post("/login", (req, res) => {
     const { tc, name, surname } = req.body;
-    const patients = readPatients();
 
-    const user = patients.find(
-        p => p.tc === tc &&
-             p.name.toLowerCase() === name.toLowerCase() &&
-             p.surname.toLowerCase() === surname.toLowerCase()
-    );
-
-    if (!user) {
-        return res.status(404).json({ error: "Kullanıcı bulunamadı" });
+    if (!isValidTc(tc)) {
+        return res.status(400).json({ error: "Geçersiz TC numarası" });
     }
 
-    res.json({ message: "Giriş başarılı", patient: user });
+    // Diğer kontrol ve işlem
 });
 
 // Sunucu başlat
