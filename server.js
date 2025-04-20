@@ -5,7 +5,9 @@ const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DATA_FILE = "./patients.json";
+
+// DATA_FILE'ı absolute path olarak tanımla
+const DATA_FILE = path.join(__dirname, "data", "patients.json");
 
 app.use(cors());
 app.use(express.json());
@@ -13,7 +15,11 @@ app.use(express.static("public"));
 
 // JSON dosyasını oku
 function readPatients() {
-    if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
+    // Dosya yoksa oluştur ve içine [] yaz
+    if (!fs.existsSync(DATA_FILE)) {
+        fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+        fs.writeFileSync(DATA_FILE, "[]");
+    }
     const data = fs.readFileSync(DATA_FILE);
     return JSON.parse(data);
 }
@@ -28,6 +34,7 @@ app.post("/register", (req, res) => {
     const newPatient = req.body;
     const patients = readPatients();
 
+    // Zaten kayıtlı mı kontrol et
     if (patients.find(p => p.tc === newPatient.tc)) {
         return res.status(400).json({ error: "Bu TC ile zaten kayıtlı bir kullanıcı var" });
     }
@@ -44,7 +51,9 @@ app.post("/login", (req, res) => {
     const patients = readPatients();
 
     const user = patients.find(
-        p => p.tc === tc && p.name.toLowerCase() === name.toLowerCase() && p.surname.toLowerCase() === surname.toLowerCase()
+        p => p.tc === tc &&
+             p.name.toLowerCase() === name.toLowerCase() &&
+             p.surname.toLowerCase() === surname.toLowerCase()
     );
 
     if (!user) {
@@ -56,5 +65,5 @@ app.post("/login", (req, res) => {
 
 // Sunucu başlat
 app.listen(PORT, () => {
-    console.log(`Sunucu çalışıyor: http://localhost:${PORT}`);
+    console.log(`✅ Sunucu çalışıyor: http://localhost:${PORT}`);
 });
