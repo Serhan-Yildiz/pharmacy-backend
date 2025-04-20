@@ -1,1 +1,23 @@
-[]
+{
+    "tc": "12345678901",
+    "name": "Ahmet",
+    "surname": "Yılmaz",
+    "age": 30,
+    "height": 175,
+    "weight": 70,
+    "gender": "erkek",
+    "planningPregnancy": 0,
+    "pregnant": 0,
+    "smoking": false,
+    "alcohol": false,
+    "caffeine": 3,
+    "grapefruit": 1,
+    "allergies": ["Fıstık", "Polen"],
+    "pastIllnesses": ["Mevsimsel Grip"],
+    "chronicIllnesses": "Yok",
+    "herbalTeas": "Adaçayı",
+    "supplements": "Magnezyum",
+    "geneticDiseases": "Hipertansiyon",
+    "currentMedications": "MATOFIN XR TABLET 500 mg 100 tablet"
+  }
+  
